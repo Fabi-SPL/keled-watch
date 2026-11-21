@@ -1,0 +1,30 @@
+# keled.de, read every 5 minutes from a GitHub runner, off the server that serves it.
+# A failed run mails the account that last changed the cron line below.
+# Minutes 2, 7, 12 and so on keep the round off the busy start of the hour.
+name: keled.de watch
+on:
+  schedule:
+    - cron: '2-59/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      path:
+        description: 'A path on keled.de to read instead of /sitemap.xml'
+        required: false
+        default: '/sitemap.xml'
+permissions:
+  contents: read
+jobs:
+  round:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: one round against keled.de
+        env:
+          PROBE_PATH: ${{ inputs.path || '/sitemap.xml' }}
+        run: |
+          case "$PROBE_PATH" in /*) ;; *) echo "usage error: the path must start with /"; exit 2;; esac
+          node probe.mjs "url=https://keled.de${PROBE_PATH}"

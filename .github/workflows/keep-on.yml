@@ -1,0 +1,34 @@
+# Once a month: count the month's rounds into log/, commit the count, and switch the watch's schedule on again.
+# GitHub switches off the schedule of a public repository after 60 days without activity; this keeps it active.
+name: keep the watch on
+on:
+  schedule:
+    - cron: '17 4 1 * *'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  actions: write
+jobs:
+  month:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: count the month's rounds into log/
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node month.mjs
+      - name: commit the count
+        run: |
+          git config user.name 'Keled'
+          git config user.email 'hello@keled.de'
+          git add log
+          if [ -n "$(git status -s log)" ]; then git commit -q -m "log: rounds counted $(date -u +%Y-%m-%dT%H:%MZ)"; fi
+          git push
+      - name: keep the schedule switched on
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/watch.yml/enable"
