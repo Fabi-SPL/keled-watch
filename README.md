@@ -1,6 +1,6 @@
 # keled-watch
 
-We watch keled.de from here. Every five minutes a GitHub runner reads keled.de/sitemap.xml once. If that read fails, it waits a minute and reads again, and only a second failure fails the run. A failed run mails the owner of this repository.
+We watch keled.de from here. The schedule asks a GitHub runner to read keled.de/sitemap.xml once every five minutes. GitHub starts scheduled runs when it has room and may delay or drop them, so two rounds can lie hours apart. If a read fails, it waits a minute and reads again, and only a second failure fails the run. A failed run mails the owner of this repository.
 
 What runs:
 
